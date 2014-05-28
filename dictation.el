@@ -25,6 +25,12 @@
 ;; audio players for console
 ;; mp3: mpg123
 ;; ogg: mplayer
+;;
+;; Installation:
+;;(add-to-list 'load-path (expand-file-name "~/git/dictation.el"))
+;;(require 'dictation)
+
+
 ;;; Code:
 
 (defun dictation-version (&optional here full message)
@@ -110,4 +116,6 @@ are supported. Maybe expand this to a map."
     (dictation-stop)))
 
 
+
+(provide 'dictation)
 
