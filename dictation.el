@@ -27,17 +27,32 @@
 ;; ogg: mplayer
 ;;; Code:
 
-(defvar ds/dictation-proc nil
+(defun dictation-version (&optional here full message)
+  "Show the version.
+Interactively, or when MESSAGE is non-nil, show it in echo area.
+With prefix argument, or when HERE is non-nil, insert it at point.
+In non-interactive uses, a reduced version string is output unless
+FULL is given."
+  (interactive (list current-prefix-arg t (not current-prefix-arg)))
+(let ((versionstr "dication version 0.1"))
+  (when here (insert versionstr))
+  (when message (message "%s" versionstr))
+  versionstr))
+
+
+(defconst dictation-version (dictation-version))
+
+(defvar dictation-proc nil
   "This variable holds the process object of the audio provessor.")
 
-(defvar ds/pause-key (kbd "<f4>")
+(defvar pause-key (kbd "<f4>")
   "Key which is used in a temporary local binding for the pause function.")
 
-(defvar ds/pause-key-old-command nil
-  "Command which was previously assigned to ds/pause-key.
+(defvar pause-key-old-command nil
+  "Command which was previously assigned to pause-key.
 Saved here to enable restoration afterwards.")
 
-(defun ds/dictation-processor (file)
+(defun dictation-processor (file)
   "Check the extension of file and returns the appropriate
 processor. Currently mpg123 for mp3 and mplayer for ogg
 are supported. Maybe expand this to a map."
@@ -47,52 +62,52 @@ are supported. Maybe expand this to a map."
      ((string= "mp3" extension) "mpg123")
      (t nil))))
 
-;; test: (ds/dictation-processor "bla.ogg")
-;; test: (ds/dictation-processor "bla.mp3")
-;; test: (ds/dictation-processor "bla.ordsdag")
-;; test: (local-set-key ds/pause-key 'next-line)
+;; test: (dictation-processor "bla.ogg")
+;; test: (dictation-processor "bla.mp3")
+;; test: (dictation-processor "bla.ordsdag")
+;; test: (local-set-key pause-key 'next-line)
 
-(defun ds/dictation-start (file)
+(defun dictation-start (file)
   "Starts a dictation with voice file FILE in mpg123."
   (interactive "fvoice file:")
-  (setq ds/dictation-proc (start-process
+  (setq dictation-proc (start-process
                         "dictation"
                         "*dictation*"
-                        (ds/dictation-processor file)
+                        (dictation-processor file)
                         (expand-file-name file)))
-  (setq ds/pause-key-old-command (local-key-binding ds/pause-key))
-  (local-set-key ds/pause-key 'ds/dictation-pause)
-  (set-process-sentinel ds/dictation-proc 'ds/dictation-sentinel))
+  (setq pause-key-old-command (local-key-binding pause-key))
+  (local-set-key pause-key 'dictation-pause)
+  (set-process-sentinel dictation-proc 'dictation-sentinel))
 
-(defun ds/dictation-pause ()
+(defun dictation-pause ()
   "Pauses and continues a audio output."
   (interactive)
-  (when (process-live-p ds/dictation-proc)
-    (if (eq 'run (process-status ds/dictation-proc))
+  (when (process-live-p dictation-proc)
+    (if (eq 'run (process-status dictation-proc))
         (progn
           (message "stopping")
-          ;;(stop-process ds/dictation-proc)
-          (signal-process (process-id ds/dictation-proc) 'STOP))
+          ;;(stop-process dictation-proc)
+          (signal-process (process-id dictation-proc) 'STOP))
       (progn
-        (message "continueing")
-        (continue-process ds/dictation-proc)))))
+        (message "continuing")
+        (continue-process dictation-proc)))))
 
-(defun ds/dictation-stop ()
+(defun dictation-stop ()
   "Terminates a audio output."
   (interactive)
-  (when (process-live-p ds/dictation-proc)
-    (delete-process ds/dictation-proc))
-  (if ds/pause-key-old-command
-      (local-set-key ds/pause-key
-                     (indirect-variable ds/pause-key-old-command))
-    (local-unset-key ds/pause-key))
+  (when (process-live-p dictation-proc)
+    (delete-process dictation-proc))
+  (if pause-key-old-command
+      (local-set-key pause-key
+                     (indirect-variable pause-key-old-command))
+    (local-unset-key pause-key))
   (message "dictation ended"))
 
 
 
-(defun ds/dictation-sentinel (process event)
-  (when (not (process-live-p ds/dictation-proc))
-    (ds/dictation-stop)))
+(defun dictation-sentinel (process event)
+  (when (not (process-live-p dictation-proc))
+    (dictation-stop)))
 
 
 
