@@ -3,14 +3,18 @@ dictation.el
 
 Emacs lisp package to play and pause voice recordings, for easier transcription
 
-Currently (Version 0.1), mp3 and ogg are supported.
-To play respective audio files, the application mplayer and/or mpg123
-must be installed.
-I think this implies a Linux/BSD like OS.
+Version 0.2 uses mplayer, so every audio format which is supported by mplayer,
+can be used for dictation.
 
 The audio player is started as a asynchronous subprocess of GNU Emacs.
 (I haven't tested on XEmacs).
-The key F4 is remapped with a local binding to act as a pause toggle key.
+
+Keys/Functions:
+F4 This is the pause button. It toggles from playback to pause mode.
+F3 Jumps back 10 seconds.
+F5 Jumps forward 10 seconds.
+
+All the functions are mapped buffer-locally to the keys.
 When the playback ends, the previous binding is restored, if there was any.
 
 Bug reports please here on github:

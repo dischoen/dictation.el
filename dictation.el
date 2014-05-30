@@ -40,7 +40,7 @@ With prefix argument, or when HERE is non-nil, insert it at point.
 In non-interactive uses, a reduced version string is output unless
 FULL is given."
   (interactive (list current-prefix-arg t (not current-prefix-arg)))
-(let ((versionstr "dication version 0.1"))
+(let ((versionstr "dication version 0.2"))
   (when here (insert versionstr))
   (when message (message "%s" versionstr))
   versionstr))
