@@ -54,24 +54,23 @@ FULL is given."
 (defvar pause-key (kbd "<f4>")
   "Key which is used in a temporary local binding for the pause function.")
 
+(defvar jump-back-key (kbd "<f3>")
+  "Key which is used in a temporary local binding for the rewind function.")
+
+(defvar jump-forward-key (kbd "<f5>")
+  "Key which is used in a temporary local binding for the forward function.")
+
 (defvar pause-key-old-command nil
   "Command which was previously assigned to pause-key.
 Saved here to enable restoration afterwards.")
 
-(defun dictation-processor (file)
-  "Check the extension of file and returns the appropriate
-processor. Currently mpg123 for mp3 and mplayer for ogg
-are supported. Maybe expand this to a map."
-  (let ((extension (car (last (split-string file "[.]" t)))))
-    (cond
-     ((string= "ogg" extension) "mplayer")
-     ((string= "mp3" extension) "mpg123")
-     (t nil))))
+(defvar jump-back-key-old-command nil
+  "Command which was previously assigned to jump-back-key.
+Saved here to enable restoration afterwards.")
 
-;; test: (dictation-processor "bla.ogg")
-;; test: (dictation-processor "bla.mp3")
-;; test: (dictation-processor "bla.ordsdag")
-;; test: (local-set-key pause-key 'next-line)
+(defvar jump-forward-key-old-command nil
+  "Command which was previously assigned to jump-forward-key.
+Saved here to enable restoration afterwards.")
 
 (defun dictation-start (file)
   "Starts a dictation with voice file FILE in mpg123."
@@ -79,24 +78,37 @@ are supported. Maybe expand this to a map."
   (setq dictation-proc (start-process
                         "dictation"
                         "*dictation*"
-                        (dictation-processor file)
+                        "mplayer"
+                        "-slave"
                         (expand-file-name file)))
   (setq pause-key-old-command (local-key-binding pause-key))
   (local-set-key pause-key 'dictation-pause)
+  
+  (setq jump-back-key-old-command (local-key-binding jump-back-key))
+  (local-set-key jump-back-key 'dictation-jump-back)
+  
+  (setq jump-forward-key-old-command (local-key-binding jump-forward-key))
+  (local-set-key jump-forward-key 'dictation-jump-forward)
+  
   (set-process-sentinel dictation-proc 'dictation-sentinel))
 
 (defun dictation-pause ()
   "Pauses and continues a audio output."
   (interactive)
   (when (process-live-p dictation-proc)
-    (if (eq 'run (process-status dictation-proc))
-        (progn
-          (message "stopping")
-          ;;(stop-process dictation-proc)
-          (signal-process (process-id dictation-proc) 'STOP))
-      (progn
-        (message "continuing")
-        (continue-process dictation-proc)))))
+    (process-send-string dictation-proc "pause\n")))
+
+(defun dictation-jump-back ()
+  "Jump back 10 seconds."
+  (interactive)
+  (when (process-live-p dictation-proc)
+    (process-send-string dictation-proc "seek -10\n")))
+
+(defun dictation-jump-forward ()
+  "Jump forward 10 seconds."
+  (interactive)
+  (when (process-live-p dictation-proc)
+    (process-send-string dictation-proc "seek 10\n")))
 
 (defun dictation-stop ()
   "Terminates a audio output."
@@ -107,15 +119,20 @@ are supported. Maybe expand this to a map."
       (local-set-key pause-key
                      (indirect-variable pause-key-old-command))
     (local-unset-key pause-key))
-  (message "dictation ended"))
-
-
+  (if jump-back-key-old-command
+      (local-set-key jump-back-key
+                     (indirect-variable jump-back-key-old-command))
+    (local-unset-key jump-back-key))
+  (if jump-forward-key-old-command
+      (local-set-key jump-forward-key
+                     (indirect-variable jump-forward-key-old-command))
+    (local-unset-key jump-forward-key))
+  (message "dictation ended")
+  (kill-buffer (process-buffer dictation-proc)))
 
 (defun dictation-sentinel (process event)
   (when (not (process-live-p dictation-proc))
     (dictation-stop)))
-
-
 
 (provide 'dictation)
 
