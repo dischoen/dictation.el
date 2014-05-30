@@ -1,7 +1,8 @@
 dictation.el
 ============
 
-Emacs lisp package to play and pause voice recordings, for easier transcription
+This is a package for GNU Emacs to play and pause voice recordings,
+for easier transcription.
 
 Version 0.2 uses mplayer, so every audio format which is supported by mplayer,
 can be used for dictation.
@@ -13,6 +14,8 @@ Keys/Functions:
 F4 This is the pause button. It toggles from playback to pause mode.
 F3 Jumps back 10 seconds.
 F5 Jumps forward 10 seconds.
+C-F4 Slow down by 5%
+M-F4 Speed up by 5%
 
 All the functions are mapped buffer-locally to the keys.
 When the playback ends, the previous binding is restored, if there was any.
