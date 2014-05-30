@@ -60,6 +60,12 @@ FULL is given."
 (defvar jump-forward-key (kbd "<f5>")
   "Key which is used in a temporary local binding for the forward function.")
 
+(defvar slow-down-key (kbd "C-<f4>")
+  "Key which is used in a temporary local binding to slow down function.")
+(defvar speed-up-key (kbd "M-<f4>")
+  "Key which is used in a temporary local binding to speed up function.")
+
+
 (defvar pause-key-old-command nil
   "Command which was previously assigned to pause-key.
 Saved here to enable restoration afterwards.")
@@ -72,6 +78,13 @@ Saved here to enable restoration afterwards.")
   "Command which was previously assigned to jump-forward-key.
 Saved here to enable restoration afterwards.")
 
+(defvar slow-down-key-old-command nil
+  "Command which was previously assigned to slow-down-key.
+Saved here to enable restoration afterwards.")
+(defvar speed-up-key-old-command nil
+  "Command which was previously assigned to speed-up-key.
+Saved here to enable restoration afterwards.")
+
 (defun dictation-start (file)
   "Starts a dictation with voice file FILE in mpg123."
   (interactive "fvoice file:")
@@ -80,6 +93,7 @@ Saved here to enable restoration afterwards.")
                         "*dictation*"
                         "mplayer"
                         "-slave"
+                        "-quiet"
                         (expand-file-name file)))
   (setq pause-key-old-command (local-key-binding pause-key))
   (local-set-key pause-key 'dictation-pause)
@@ -89,7 +103,12 @@ Saved here to enable restoration afterwards.")
   
   (setq jump-forward-key-old-command (local-key-binding jump-forward-key))
   (local-set-key jump-forward-key 'dictation-jump-forward)
-  
+
+  (setq slow-down-key-old-command (local-key-binding slow-down-key))
+  (local-set-key slow-down-key 'dictation-slow-down)
+  (setq speed-up-key-old-command (local-key-binding speed-up-key))
+  (local-set-key speed-up-key 'dictation-speed-up)
+
   (set-process-sentinel dictation-proc 'dictation-sentinel))
 
 (defun dictation-pause ()
@@ -110,6 +129,17 @@ Saved here to enable restoration afterwards.")
   (when (process-live-p dictation-proc)
     (process-send-string dictation-proc "seek 10\n")))
 
+(defun dictation-slow-down ()
+  "Slow down by 5%."
+  (interactive)
+  (when (process-live-p dictation-proc)
+    (process-send-string dictation-proc "step_property speed 0.05 -1\n")))
+(defun dictation-speed-up ()
+  "Speed up by 5%."
+  (interactive)
+  (when (process-live-p dictation-proc)
+    (process-send-string dictation-proc "step_property speed 0.05\n")))
+
 (defun dictation-stop ()
   "Terminates a audio output."
   (interactive)
@@ -127,6 +157,14 @@ Saved here to enable restoration afterwards.")
       (local-set-key jump-forward-key
                      (indirect-variable jump-forward-key-old-command))
     (local-unset-key jump-forward-key))
+  (if slow-down-key-old-command
+      (local-set-key slow-down-key
+                     (indirect-variable slow-down-key-old-command))
+    (local-unset-key slow-down-key))
+  (if speed-up-key-old-command
+      (local-set-key speed-up-key
+                     (indirect-variable speed-up-key-old-command))
+    (local-unset-key speed-up-key))
   (message "dictation ended")
   (kill-buffer (process-buffer dictation-proc)))
 
