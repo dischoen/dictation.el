@@ -21,3 +21,6 @@ Bug reports please here on github:
 https://github.com/dischoen/dictation.el/issues
 
 Hm. I think that's all.
+
+Installation
+As usual. Put it in your load-path and require it.
